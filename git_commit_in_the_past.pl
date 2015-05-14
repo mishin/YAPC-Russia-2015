@@ -2,21 +2,22 @@
 
 =head1 NAME
 
-git_commit.pl - commit with git but using more useful date format
+git_commit_in_the_past.pl - commit with git but using more useful date format
 
 =head1 SYNOPSIS
 
-    perl git_commit.pl [OPTION]... 
+    perl git_commit_in_the_past.pl [OPTION]... 
 
     -v, --verbose  use verbose mode
     --help         print this help message
-
-    --date         date in 'dd.mm.yyyy' format
-    -m            message for commit
+    --date         date in 'dd.mm.yyyy' format or 'today'
+    --message      message for commit
+    --file         file for commit or '.'
+    --debug        only pritn current git command with formatted date
 
 Examples:
 
-    perl git_commit.pl --date '15.05.2015' -m 'Hi YAPC Russia 2015'
+    perl git_commit_in_the_past.pl --date '15.05.2015' --message 'Hi YAPC Russia 2015' --file 'file2commit'
 
 =head1 DESCRIPTION
 
@@ -57,36 +58,41 @@ exit main();
 sub main {
 
     # Argument parsing
-    my ( $verbose, $date, $message, $test );
+    my $verbose = 0;                    # frequently referred
+    my $debug = 0;                      # if you want to try command
+    my $file = '.';                     # default git add .
+    my $date = 'today';                 # default git commit today date
+    my %options = ('verbose' => \$verbose, 'debug' => \$debug, 'file' => \$file, 'date' => \$date);
     GetOptions(
-        'verbose' => \$verbose,
-        'date=s'  => \$date,
-        'm=s'     => \$message,
-        'test'    => \$test,
+        \%options,
+        'verbose',
+        'debug',    
+        'date=s',
+        'message=s',
+        'file=s',
     ) or pod2usage(1);
-    if ( !defined $date || !defined $message ) {
+    if ( ! exists $options{date}  || ! exists $options{message}  ) {
         pod2usage(1);
     }
 
-    git_commit( $message, prepare_day($date), $test );
+    git_commit( \%options ) ; #$message, prepare_day($date), $test );
 
     return 0;
 }
 
 sub prepare_day {
     my ($date) = @_;
+    my $dt = DateTime->now( time_zone => 'Europe/Moscow' );
     my ( $day, $month, $year );
     if ( $date =~ $RE{time}{dmy}{-keep} ) {
         $day   = $2;
         $month = $3;
         $year  = $4;
+        $dt->set_year($year);
+        $dt->set_month($month);
+        $dt->set_day($day);
     }
-
-    my $dt = DateTime->now( time_zone => 'Europe/Moscow' );
-    $dt->set_year($year);
-    $dt->set_month($month);
-    $dt->set_day($day);
-
+    
     #'Fri Jul 26 19:34:15 2013 +0200';
     my $pattern = '%a %b %d %H:%M %Y %z';
     my $formatter = DateTime::Format::Strptime->new( pattern => $pattern );
@@ -95,12 +101,16 @@ sub prepare_day {
 }
 
 sub git_commit {
-    my ( $message, $commit_day, $test ) = @_;
-    my $r = Git::Repository->new( work_tree => getcwd );
-    if ( defined $test ) {
+    my ( $options ) = @_;
+    my $commit_day=prepare_day($options->{date});
+    my $message=$options->{message};
+    my $git = Git::Repository->new( work_tree => getcwd );
+    if ( defined $options->{debug} ) {
         say "git commit --date '$commit_day' -m '$message'";
     }
     else {
-        $r->run( commit => '-m', $message, "--date=$commit_day" );
+        $git->run( add => $options->{file} );
+        $git->run( commit => '-m', $message, "--date=$commit_day" );
+        $git->run( 'push' );
     }
 }
