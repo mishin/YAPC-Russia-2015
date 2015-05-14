@@ -83,11 +83,10 @@ sub main {
 sub prepare_day {
     my ($date) = @_;
     my $dt = DateTime->now( time_zone => 'Europe/Moscow' );
-    my ( $day, $month, $year );
     if ( $date =~ $RE{time}{dmy}{-keep} ) {
-        $day   = $2;
-        $month = $3;
-        $year  = $4;
+        my $day   = $2;
+        my $month = $3;
+        my $year  = $4;
         $dt->set_year($year);
         $dt->set_month($month);
         $dt->set_day($day);
