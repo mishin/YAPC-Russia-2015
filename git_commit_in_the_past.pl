@@ -74,9 +74,7 @@ sub main {
     if ( ! exists $options{date}  || ! exists $options{message}  ) {
         pod2usage(1);
     }
-
-    git_commit( \%options ) ; #$message, prepare_day($date), $test );
-
+    git_commit( \%options ) ;
     return 0;
 }
 
