@@ -110,6 +110,9 @@ sub git_commit {
     else {
         $git->run( add => $options->{file} );
         $git->run( commit => '-m', $message, "--date=$commit_day" );
+	#git remote -v
+	#git remote add upstream git://github.com/mishin/YAPC-Russia-2015.git
+	#
         $git->run('push');
     }
 }
