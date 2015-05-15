@@ -50,7 +50,7 @@ use Regexp::Common qw(time);
 use DateTime;
 use DateTime::Format::Strptime;
 use Git::Repository;
-use FindBin '$RealBin';
+use Cwd;
 
 exit main();
 
@@ -96,7 +96,7 @@ sub prepare_day {
 
 sub git_commit {
     my ( $message, $commit_day, $test ) = @_;
-    my $r = Git::Repository->new( work_tree => $RealBin );
+    my $r = Git::Repository->new( work_tree => getcwd );
     if ( defined $test ) {
         say "git commit --date '$commit_day' -m '$message'";
     }
