@@ -63,10 +63,10 @@ sub main {
     my $file    = '.';        # default git add .
     my $date    = 'today';    # default git commit today date
     my %options = (
-        'verbose' => $verbose,
-        'debug'   => $debug,
-        'file'    => $file,
-        'date'    => $date
+        'verbose' => \$verbose,
+        'debug'   => \$debug,
+        'file'    => \$file,
+        'date'    => \$date
     );
     GetOptions( \%options, 'verbose', 'debug', 'date=s', 'message=s',
         'file=s', )
@@ -74,7 +74,6 @@ sub main {
     if ( !exists $options{date} || !exists $options{message} ) {
         pod2usage(1);
     }
-    print "\$options{file}: [$options{file}]\n";
     git_commit( \%options );
 
     return 0;
@@ -104,7 +103,7 @@ sub git_commit {
     my $commit_day = prepare_day( $options->{date} );
     my $message    = $options->{message};
     my $git = Git::Repository->new( work_tree => getcwd );
-    if ( $options->{debug}==1 ) {
+    if ( $options->{debug} ) {
         say "git commit --date '$commit_day' -m '$message'";
     }
     else {
