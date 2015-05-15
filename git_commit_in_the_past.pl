@@ -112,6 +112,8 @@ sub git_commit {
         $git->run( commit => '-m', $message, "--date=$commit_day" );
 	#git remote -v
 	#git remote add upstream git://github.com/mishin/YAPC-Russia-2015.git
+	# git remote set-url origin https://github.com/mishin/YAPC-Russia-2015.git
+	#git remote set-url origin git@github.com/mishin/YAPC-Russia-2015.git
 	#
         $git->run('push');
     }
