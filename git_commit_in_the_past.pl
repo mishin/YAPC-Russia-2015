@@ -13,12 +13,15 @@ git_commit_in_the_past.pl - commit with git but using more useful date format
     --date         date in 'dd.mm.yyyy' format or 'today'
     --message      message for commit
     --file         file for commit or '.'
-    --debug        only pritn current git command with formatted date
+    --repo_dir     default curr directory or you can pass it from command line
+    --debug        only print current git command with formatted date
 
 Examples:
 
     perl git_commit_in_the_past.pl --date '15.05.2015' 
 	--message 'Hi YAPC Russia 2015' --file 'file2commit'
+	--repo_dir "c:\Users\rb102870\Documents\job\svn\04 ETL\01 DATAHUB\01_Backup\02_data"
+	--debug=1
 
 =head1 DESCRIPTION
 
@@ -53,36 +56,53 @@ use DateTime;
 use DateTime::Format::Strptime;
 use Git::Repository;
 use Cwd;
+use FindBin '$RealBin';
+use Log::Log4perl qw(:easy);
 
 exit main();
 
 sub main {
 
     # Argument parsing
-    my $verbose = 0;          # frequently referred
-    my $debug   = 0;          # if you want to try command
-    my $file    = '.';        # default git add .
-    my $date    = 'today';    # default git commit today date
-    my %options = (
-        'verbose' => $verbose,
-        'debug'   => $debug,
-        'file'    => $file,
-        'date'    => $date
+    my $verbose  = 0;          # frequently referred
+    my $debug    = 0;          # if you want to try command
+    my $file     = '.';        # default git add .
+    my $date     = 'today';    # default git commit today date
+    my $repo_dir = getcwd;     # default curr directory
+
+    my $log_file = $RealBin . "/git_commit.log";
+
+    #Init logging
+    Log::Log4perl->easy_init(
+        {   level  => $DEBUG,
+            file   => ":utf8>>$log_file",
+            layout => '%d %p> %F{1}:%L %M - %m%n'
+        }
     );
-    GetOptions( \%options, 'verbose', 'debug', 'date=s', 'message=s',
-        'file=s', )
-      or pod2usage(1);
-    if ( !exists $options{date} || !exists $options{message} ) {
+
+    #or you can pass it from command line
+    my %options = (
+        'verbose'  => $verbose,
+        'debug'    => $debug,
+        'file'     => $file,
+        'date'     => $date,
+        'repo_dir' => $repo_dir,
+    );
+    GetOptions(
+        \%options,   'verbose', 'debug', 'date=s',
+        'message=s', 'file=s',  'repo_dir=s',
+    ) or pod2usage(1);
+    if (!exists $options{date} || !exists $options{message}) {
         pod2usage(1);
     }
-    git_commit( \%options );
+    git_commit(\%options);
     return 0;
 }
 
 sub prepare_day {
     my ($date) = @_;
-    my $dt = DateTime->now( time_zone => 'Europe/Moscow' );
-    if ( $date =~ $RE{time}{dmy}{-keep} ) {
+    my $dt = DateTime->now(time_zone => 'Europe/Moscow');
+    if ($date =~ $RE{time}{dmy}{-keep}) {
         my $day   = $2;
         my $month = $3;
         my $year  = $4;
@@ -93,25 +113,30 @@ sub prepare_day {
 
     #'Fri Jul 26 19:34:15 2013 +0200';
     my $pattern = '%a %b %d %H:%M %Y %z';
-    my $formatter = DateTime::Format::Strptime->new( pattern => $pattern );
+    my $formatter = DateTime::Format::Strptime->new(pattern => $pattern);
     $dt->set_formatter($formatter);
     return $dt->_stringify();
 }
 
 sub git_commit {
     my ($options)  = @_;
-    my $commit_day = prepare_day( $options->{date} );
+    my $commit_day = prepare_day($options->{date});
     my $message    = $options->{message};
-    my $git = Git::Repository->new( work_tree => getcwd );
-    if ( $options->{debug}==1 ) {
-        say "git commit --date '$commit_day' -m '$message'";
+    my $git = Git::Repository->new(work_tree => $options->{repo_dir});
+    my $msg =
+      qq{commiting in repo_dir: $options->{repo_dir}: git commit --date '$commit_day' -m '$message'};
+
+    if ($options->{debug} == 1) {
+        DEBUG($msg);
     }
     else {
-        $git->run( add => $options->{file} );
-        $git->run( commit => '-m', $message, "--date=$commit_day" );
-	#git remote -v
-	#git remote set-url origin git@github.com:mishin/YAPC-Russia-2015.git
-	#
-        $git->run('push');
+        INFO($msg);
+        $git->run(add => $options->{file});
+        $git->run(commit => '-m', $message, "--date=$commit_day");
+
+        #git remote -v
+        #git remote set-url origin git@github.com:mishin/YAPC-Russia-2015.git
+        #
+        # $git->run('push');
     }
 }
