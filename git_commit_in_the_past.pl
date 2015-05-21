@@ -20,7 +20,7 @@ Examples:
 
     perl git_commit_in_the_past.pl --date '15.05.2015' 
 	--message 'Hi YAPC Russia 2015' --file 'file2commit'
-	--repo_dir "c:\Users\rb102870\Documents\job\svn\04 ETL\01 DATAHUB\01_Backup\02_data"
+	--repo_dir "c:\Users\mishin\Documents\job\data"
 	--debug=1
 
 =head1 DESCRIPTION
