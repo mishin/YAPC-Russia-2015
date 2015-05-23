@@ -74,7 +74,7 @@ sub main {
     if ( !exists $options{date} || !exists $options{message} ) {
         pod2usage(1);
     }
-    print "\$options{file}: [$options{file}]\n";
+
     git_commit( \%options );
 
     return 0;
