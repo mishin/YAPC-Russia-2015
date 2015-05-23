@@ -139,6 +139,6 @@ sub git_commit {
         #git remote -v
         #git remote set-url origin git@github.com:mishin/YAPC-Russia-2015.git
         #
-        # $git->run('push');
+        $git->run('push');
     }
 }
