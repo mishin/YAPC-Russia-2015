@@ -1,0 +1,1 @@
+2015/05/23 04:38:23 INFO> git_commit_in_the_past.pl:135 main::git_commit - commiting in repo_dir: /home/mishin/github/YAPC-Russia-2015: git commit --date 'Sat May 23 04:38 2015 +0300' -m 'remove debug output and merge'
