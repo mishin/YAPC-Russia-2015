@@ -20,7 +20,7 @@ Examples:
 
     perl git_commit_in_the_past.pl --date '15.05.2015' 
 	--message 'Hi YAPC Russia 2015' --file 'file2commit'
-	--repo_dir "c:\Users\mishin\Documents\job\data"
+	--repo_dir "c:\Users\rb102870\Documents\job\svn\04 ETL\01 DATAHUB\01_Backup\02_data"
 	--debug=1
 
 =head1 DESCRIPTION
@@ -95,9 +95,7 @@ sub main {
     if (!exists $options{date} || !exists $options{message}) {
         pod2usage(1);
     }
-
-    git_commit( \%options );
-
+    git_commit(\%options);
     return 0;
 }
 
@@ -133,12 +131,12 @@ sub git_commit {
     }
     else {
         INFO($msg);
-        $git->run(add => $options->{file});
+        $git->run(add => $options->{file}, '-A');#  '-A (--all)' or '--ignore-removal'
         $git->run(commit => '-m', $message, "--date=$commit_day");
 
         #git remote -v
         #git remote set-url origin git@github.com:mishin/YAPC-Russia-2015.git
         #
-        $git->run('push');
+        # $git->run('push');
     }
 }
